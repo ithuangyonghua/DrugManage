@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drugmanager.dao.DrugInfoDao">
+
+ <!--  <select id="pageQuery" resultType="com.drugmanager.bean.DrugInfo">
+     select * from druginfo left join drugcategory on druginfo.drugcategory = drugcategory.dcategoryid
+     <where>
+      <if test="searchText!=null">
+       and drugname  like concat("%",#{searchText},"%")
+      </if>
+     </where>
+     limit #{start},#{size}
+   </select> -->
+   
+   <insert id="insertDrugInfo" parameterType="com.drugmanager.bean.DrugInfo">
+   <selectKey keyProperty="drugid" order="AFTER" resultType="java.lang.Integer">
+			<!-- SELECT LAST_INSERT_ID()：得到刚insert到数据表中的记录的主键值，只适用于自增主键 -->
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+   insert into druginfo(drugname,drugcategory,price,yt) values (#{drugname},#{drugcategory},#{price},#{yt})
+   </insert>
+   
+   <resultMap type="com.drugmanager.vo.DrugInfoVo" id="DrugInfoVoMap">
+       <id column="drugid" property="drugid"/>
+       <result column="drugname" property="drugname"/>
+       <result column="drugcategory" property="drugcategory"/>
+       <result column="price" property="price"/>
+       <result column="yt" property="yt"/>
+       <association property="drugCategory"  javaType="com.drugmanager.bean.DrugCategory">
+           <result column="name" property="name"/>
+       </association>
+   </resultMap>
+   <select id="pageQuery" resultMap="DrugInfoVoMap">
+     select * from druginfo left join drugcategory on druginfo.drugcategory = drugcategory.dcategoryid
+     <where>
+      <if test="queryID!=null">
+       and drugid  = #{drugid} 
+      </if>
+       <if test="queryName!=null">
+       and drugname  like concat("%",#{queryName},"%")
+      </if>
+       <if test="queryCategory!=null">
+       and druginfo.drugcategory  = #{queryCategory}
+      </if>
+     </where>
+     order by druginfo.drugcategory desc,convert(druginfo.drugname  using gbk )  
+     limit #{start},#{size}
+   </select>
+   <select id="pageQueryCount" resultType="int">
+     <!-- select count(drugid) from druginfo  -->
+     select count(drugid) from druginfo left join drugcategory on druginfo.drugcategory = drugcategory.dcategoryid
+      <where>
+       <if test="queryID!=null">
+       and drugid  = #{drugid} 
+      </if>
+       <if test="queryName!=null">
+       and drugname  like concat("%",#{queryName},"%")
+      </if>
+       <if test="queryCategory!=null">
+       and druginfo.drugcategory  = #{queryCategory}
+      </if>
+     </where>
+   </select>
+   
+   
+   <delete id="deleteDrugInfoBouth">
+      delete from druginfo where drugid in 
+      <foreach collection="drugids" open="(" item="drugid" close=")" separator=",">
+         #{drugid}
+      </foreach>
+   </delete>
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drugmanager.dao.DrugCategoryDao">
+
+    <select id="pageQuery" resultType="com.drugmanager.bean.DrugCategory">
+     select * from drugcategory 
+     <where>
+      <if test="searchText!=null">
+       and name  like concat("%",#{searchText},"%")
+      </if>
+     </where>
+     limit #{start},#{size}
+   </select>
+   <select id="pageQueryCount" resultType="int">
+     select count(dcategoryid) from drugcategory 
+      <where>
+      <if test="searchText!=null">
+       and name  like concat("%",#{searchText},"%")
+      </if>
+     </where>
+   </select>
+   
+    <delete id="deleteDrugCategoryBouth">
+      delete from drugcategory where dcategoryid in 
+      <foreach collection="drugCategoryids" open="(" item="drugCategoryid" close=")" separator=",">
+         #{drugCategoryid}
+      </foreach>
+   </delete>
+</mapper>

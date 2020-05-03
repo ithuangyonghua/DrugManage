@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+    <!-- 
+      IOC:创建对象以为维护对象间的关系
+      AOP:对对象的功能进行扩展
+     -->   
+   <!--
+   Spring框架的核心是构建对象，整合对象之间的关系（IOC）及扩展对象功能（AOP），
+       所以需要在spring-context.xml配置文件中增加业务对象扫描的相关配置。扫描后由Spring框架进行管理和组合。
+       
+       该注解的功能就是扫描到@Service注解的类,排除@Controller
+     -->
+    <context:component-scan base-package="com.drugmanager.*" >
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    
+    
+    <!-- 
+          既然需要和数据库进行关联，那么Mybatis核心对象就需要依赖于数据库连接池（C3P0）,所以在Spring配置文件中增加相应的配置。
+          
+          连接C3P0连接池,提高连接性能
+     -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" >
+        <property name="driverClass" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3306/drugmanage?rewriteBatchedStatements=true&amp;useUnicode=true&amp;characterEncoding=utf8"/>
+        <property name="user" value="root"/>
+        <property name="password" value="123"/>
+    </bean>
+    <!-- 
+    Mybatis框架主要处理业务和数据库之间的数据交互，所以创建对象和管理对象生命周期的职责可以委托Spring框架完成。
+         如：创建Mybatis核心对象。
+     -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" >
+        <property name="configLocation" value="classpath:mybatis/config.xml" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="mapperLocations" >
+            <list>
+                <value>classpath*:mybatis/mapper-*.xml</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 扫描Dao层 -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer" >
+        <property name="basePackage" value="com.drugmanager.**.dao" />
+    </bean>
+    
+    
+    
+    
+    <!-- 
+            为了保证数据操作的一致性，必须在程序中增加事务处理。Spring框架采用声明式事务，
+           通过AOP的方式将事务增加到业务中。所以需要在Spring配置文件中增加相关配置
+     -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:advice id="transactionAdvice" transaction-manager="transactionManager" >
+        <tx:attributes>
+            <!-- 
+              read-only:只读事务,提高访问效率
+              propagation:事务的传播行为
+              isolation:隔离级别  DEFAULT指默认隔离
+              rollback-for:回滚策略
+             -->
+            <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT" read-only="false"  />
+            <tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT" read-only="false"  />
+            <tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT" read-only="false"  />
+            <tx:method name="query*" read-only="true" />
+        </tx:attributes>
+    </tx:advice>    
+    <aop:config>
+        <aop:advisor advice-ref="transactionAdvice" pointcut="execution(* com.drugmanager..*Service.*(..))"/>
+    </aop:config>
+    
+    
+    
+    
+</beans>

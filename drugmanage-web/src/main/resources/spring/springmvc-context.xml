@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- SpringMVC框架的核心是处理数据的流转，所以需要在springmvc-context.xml配置文件中增加控制器 对象（Controller）扫描的相关配置。扫描后由SpringMVC框架进行管理和组合。 
+		扫描@Controoler注解的类 -->
+	<context:component-scan base-package="com.drugmanager.*"
+		use-default-filters="false">
+		<context:include-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<!-- 配置拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<!-- path="/**表示所有的请求都会拦截" -->
+			<mvc:mapping path="/**" />
+			<!--exclude-mapping中的path表示这些路径不会被拦截 -->
+			<mvc:exclude-mapping path="/login" />
+			<mvc:exclude-mapping path="/doAjaxLogin" />
+			<!-- 以下是排除静态资源 -->
+			<mvc:exclude-mapping path="/bootstrap/**" />
+			<mvc:exclude-mapping path="/css/**" />
+			<mvc:exclude-mapping path="/fonts/**" />
+			<mvc:exclude-mapping path="/img/**" />
+			<mvc:exclude-mapping path="/jquery/**" />
+			<mvc:exclude-mapping path="/layer/**" />
+			<mvc:exclude-mapping path="/script/**" />
+			<mvc:exclude-mapping path="/ztree/**" />
+			<bean class="com.drugmanager.web.LoginInterceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<!-- 配置拦截器 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<!-- path="/**表示所有的请求都会拦截" -->
+			<mvc:mapping path="/**" />
+			<!--exclude-mapping中的path表示这些路径不会被拦截 -->
+			<mvc:exclude-mapping path="/login" />
+			<mvc:exclude-mapping path="/doAjaxLogin" />
+			<!-- 以下是排除静态资源 -->
+			<mvc:exclude-mapping path="/bootstrap/**" />
+			<mvc:exclude-mapping path="/css/**" />
+			<mvc:exclude-mapping path="/fonts/**" />
+			<mvc:exclude-mapping path="/img/**" />
+			<mvc:exclude-mapping path="/jquery/**" />
+			<mvc:exclude-mapping path="/layer/**" />
+			<mvc:exclude-mapping path="/script/**" />
+			<mvc:exclude-mapping path="/ztree/**" />
+			<bean class="com.drugmanager.web.AuthInterceptor"></bean>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- 静态资源如何不被SpringMVC框架进行拦截 在配置文件中增加<mvc:default-servlet-handler/>, <mvc:annotation-driven 
+		/>即可 在实际的项目中静态资源不会和动态资源放在一起，也就意味着不会放置在服务器中，所以这些配置可以省略。 -->
+	<mvc:default-servlet-handler />
+	<mvc:annotation-driven />
+
+	<!-- 如果SpringMVC框架数据处理为页面跳转，那么需要配置相应的视图解析器ViewResolver -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+
+
+	<!-- 如果SpringMVC框架数据处理为响应JSON字符串，那么为了浏览器方便对响应的字符串进行处理，需要明确字符串的类型及编码方式。 如果增加了<mvc:annotation-driven 
+		/>标签，下面的配置可省略。 当我们不是跳转页面时,我们要指定结果返回给页面的格式 application/json;charset=UTF-8:指定是json格式,且编码为utf-8 -->
+	<bean
+		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean
+					class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>application/json;charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+
+	<!-- 如果项目中含有文件上传业务，还需要增加文件上传解析器MultipartResolver -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver"
+		p:defaultEncoding="UTF-8">
+		<property name="maxUploadSize" value="2097152" />
+		<property name="resolveLazily" value="true" />
+	</bean>
+</beans>

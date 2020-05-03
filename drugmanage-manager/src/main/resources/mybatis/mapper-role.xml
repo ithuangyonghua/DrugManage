@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drugmanager.dao.RoleDao">
+
+   <select id="pageQuery" resultType="com.drugmanager.bean.Role">
+     select * from role 
+     <where>
+      <if test="searchText!=null">
+       and name  like concat("%",#{searchText},"%")
+      </if>
+     </where>
+     limit #{start},#{size}
+   </select>
+   <select id="pageQueryCount" resultType="int">
+     select count(id) from role 
+      <where>
+      <if test="searchText!=null">
+       and name  like concat("%",#{searchText},"%")
+      </if>
+     </where>
+   </select>
+   
+   <delete id="deleteRoleBouth">
+      delete from role where id in 
+      <foreach collection="roleids" open="(" item="roleid" close=")" separator=",">
+         #{roleid}
+      </foreach>
+   </delete>
+   
+   <insert id="doAssign">
+       insert into role_permission(rid,pid) values
+       <foreach collection="permissionids"  separator="," item="permissionid">
+         (#{roleid},#{permissionid})
+       </foreach>
+   </insert>
+   
+   <delete id="deleteAssign">
+      delete from role_permission where rid = #{roleid}
+   </delete>
+</mapper>

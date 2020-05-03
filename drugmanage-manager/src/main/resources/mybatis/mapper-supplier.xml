@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drugmanager.dao.SupplierDao">
+
+    <select id="pageQuery" resultType="com.drugmanager.bean.Supplier">
+     select * from supplier 
+     <where>
+      <if test="searchText!=null">
+       and suppliername  like concat("%",#{searchText},"%")
+      </if>
+     </where>
+     limit #{start},#{size}
+   </select>
+   <select id="pageQueryCount" resultType="int">
+     select count(supplierid) from supplier 
+      <where>
+      <if test="searchText!=null">
+       and suppliername  like concat("%",#{searchText},"%")
+      </if>
+     </where>
+   </select>
+   
+   
+   <delete id="deleteSupplierBouth">
+      delete from supplier where supplierid in 
+      <foreach collection="supplierids" open="(" item="supplierid" close=")" separator=",">
+         #{supplierid}
+      </foreach>
+   </delete>
+</mapper>

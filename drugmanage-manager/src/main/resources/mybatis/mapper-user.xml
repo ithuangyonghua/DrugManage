@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.drugmanager.dao.UserDao">
+	<select id="pageQueryData" resultType="com.drugmanager.bean.User">
+		<!-- 传入的参数如果是一个map,那么参数配置的是key名称 -->
+		select * from user
+		<where>
+			<if test="queryText!=null">
+				and loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+		order by createtime desc
+		limit #{start},#{size}
+	</select>
+
+	<select id="pageQueryCount" resultType="int">
+		select count(id) from user
+		<where>
+			<if test="queryText!=null">
+				and loginacct like concat('%',#{queryText},'%')
+			</if>
+		</where>
+	</select>
+	<delete id="deleteBoathUser">
+		delete from user where id in
+		<foreach collection="userids" item="userid" open="(" close=")"
+			separator=",">
+			#{userid}
+		</foreach>
+	</delete>
+	<update id="updateUser" parameterType="com.drugmanager.bean.User">
+		update user set username=#{username},loginacct=#{loginacct},email=#{email}
+		where id=#{id}
+	</update>
+	
+	<insert id="insertAssign">
+	    insert into user_role(uid,rid) values
+	    <foreach collection="roleids" item="rid" separator=",">
+	     (#{uid},#{rid})
+	    </foreach>
+	</insert>
+	<delete id="deleteAssign">
+	    delete from user_role where  uid = #{uid} and rid in
+	    <foreach collection="roleids" open="(" close=")" separator="," item="rid">
+	      #{rid}
+	    </foreach>
+	</delete>
+</mapper>
+   
+    
