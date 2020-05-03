@@ -34,7 +34,7 @@
      select * from druginfo left join drugcategory on druginfo.drugcategory = drugcategory.dcategoryid
      <where>
       <if test="queryID!=null">
-       and drugid  = #{drugid} 
+       and drugid  = #{queryID} 
       </if>
        <if test="queryName!=null">
        and drugname  like concat("%",#{queryName},"%")
@@ -51,7 +51,7 @@
      select count(drugid) from druginfo left join drugcategory on druginfo.drugcategory = drugcategory.dcategoryid
       <where>
        <if test="queryID!=null">
-       and drugid  = #{drugid} 
+       and drugid  = #{queryID} 
       </if>
        <if test="queryName!=null">
        and drugname  like concat("%",#{queryName},"%")
